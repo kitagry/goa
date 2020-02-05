@@ -86,6 +86,11 @@ type (
 		Headers *MappedAttributeExpr
 		// Response body if any
 		Body *AttributeExpr
+		// SkipResponseBodyEncodeDecode indicates that Goa should not generate
+		// the response encoding and decoding code and instead should generate a
+		// data structure that lets the service and client code access the
+		// underlying HTTP response body directly.
+		SkipResponseBodyEncodeDecode bool
 		// Response Content-Type header value
 		ContentType string
 		// Tag the value a field of the result must have for this

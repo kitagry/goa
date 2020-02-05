@@ -555,6 +555,76 @@ func MultipartRequest() {
 	e.MultipartRequest = true
 }
 
+// SkipRequestBodyEncodeDecode prevents Goa from generating the request encoding
+// (client) and decoding (server) code. Instead the service and client methods
+// get direct access to the underlying HTTP request body io. This makes it
+// possible to stream requests without requiring the entire content to be loaded
+// in memory for encoding/decoding. Note that the use of this function is
+// incompatible with gRPC and calling it on a method that defines a gRPC
+// transport is an error.
+//
+// SkipRequestBodyEncodeDecode must appear in a HTTP endpoint expression.
+//
+// Example:
+//
+//    var _ = Service("upload", func() {
+//        Method("upload", func() {
+//            Payload(func() {
+//                Attribute("id", String)
+//                Attribute("length", Int)
+//            })
+//            HTTP(func() {
+//                POST("/{id}")
+//                Header("length:Content-Length")
+//                SkipRequestBodyEncodeDecode()
+//            })
+//        })
+//
+func SkipRequestBodyEncodeDecode() {
+	e, ok := eval.Current().(*expr.HTTPEndpointExpr)
+	if !ok {
+		eval.IncompatibleDSL()
+		return
+	}
+	e.SkipRequestBodyEncodeDecode = true
+}
+
+// SkipResponseBodyEncodeDecode prevents Goa from generating the response
+// encoding (server) and decoding (client) code. Instead the service and client
+// methods get direct access to the underlying HTTP response body io. This makes
+// it possible to stream responses without requiring the entire content to be
+// loaded in memory for encoding/decoding. Note that the use of this function is
+// incompatible with gRPC and calling it on a method that defines a gRPC
+// transport is an error.
+//
+// SkipResponseBodyEncodeDecode must appear in a HTTP response expression.
+//
+// Example:
+//
+//    var _ = Service("download", func() {
+//        Method("download", func() {
+//            Payload(String)
+//            Result(func() {
+//                Attribute("length", Int)
+//            })
+//            HTTP(func() {
+//                POST("/{id}")
+//                Response(func() {
+//                    Header("length:Content-Length")
+//                    SkipResponseBodyEncodeDecode()
+//                })
+//            })
+//        })
+//
+func SkipResponseBodyEncodeDecode() {
+	r, ok := eval.Current().(*expr.HTTPResponseExpr)
+	if !ok {
+		eval.IncompatibleDSL()
+		return
+	}
+	r.SkipResponseBodyEncodeDecode = true
+}
+
 // Body describes a HTTP request or response body.
 //
 // Body must appear in a Method HTTP expression to define the request body or in

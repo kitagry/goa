@@ -43,6 +43,11 @@ type (
 		// StreamingBody describes the body transferred through the websocket
 		// stream.
 		StreamingBody *AttributeExpr
+		// SkipRequestBodyEncodeDecode indicates that Goa should not generate
+		// the request encoding and decoding code and instead should generate a
+		// data structure that lets the service and client code access the
+		// underlying HTTP request body directly.
+		SkipRequestBodyEncodeDecode bool
 		// Responses is the list of all the possible success HTTP
 		// responses.
 		Responses []*HTTPResponseExpr
