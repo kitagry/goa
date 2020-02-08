@@ -587,6 +587,11 @@ func SkipRequestBodyEncodeDecode() {
 		return
 	}
 	e.SkipRequestBodyEncodeDecode = true
+	if e.MethodExpr.Stream == expr.ServerStreamKind {
+		e.MethodExpr.Stream = expr.BidirectionalStreamKind
+	} else {
+		e.MethodExpr.Stream = expr.ClientStreamKind
+	}
 }
 
 // SkipResponseBodyEncodeDecode prevents Goa from generating the response
@@ -622,7 +627,17 @@ func SkipResponseBodyEncodeDecode() {
 		eval.IncompatibleDSL()
 		return
 	}
+	e, ok := r.Parent.(*expr.HTTPEndpointExpr)
+	if !ok {
+		eval.IncompatibleDSL()
+		return
+	}
 	r.SkipResponseBodyEncodeDecode = true
+	if e.MethodExpr.Stream == expr.ClientStreamKind {
+		e.MethodExpr.Stream = expr.BidirectionalStreamKind
+	} else {
+		e.MethodExpr.Stream = expr.ServerStreamKind
+	}
 }
 
 // Body describes a HTTP request or response body.

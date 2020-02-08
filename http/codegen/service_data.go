@@ -113,6 +113,10 @@ type (
 		// apply to the method and are encoded in the request query
 		// string.
 		QuerySchemes service.SchemesData
+		// SkipRequestBodyEncodeDecode tells Goa to bypass the generation of the
+		// encode and decode code for the request body and instead give the
+		// service method direct access to the body reader/writer.
+		SkipRequestBodyEncodeDecode bool
 
 		// server
 
@@ -318,6 +322,10 @@ type (
 		// ViewedResult indicates whether the response body type is a
 		// result type.
 		ViewedResult *service.ViewedResultTypeData
+		// SkipResponseBodyEncodeDecode tells Goa to bypass the generation of
+		// the encode and decode code for the response body and instead give the
+		// service method direct access to the body reader/writer.
+		SkipResponseBodyEncodeDecode bool
 	}
 
 	// InitData contains the data required to render a constructor.
@@ -816,28 +824,29 @@ func (d ServicesData) analyze(hs *expr.HTTPServiceExpr) *ServiceData {
 		}
 
 		ad := &EndpointData{
-			Method:          ep,
-			ServiceName:     svc.Name,
-			ServiceVarName:  svc.VarName,
-			ServicePkgName:  svc.PkgName,
-			Payload:         payload,
-			Result:          buildResultData(a, rd),
-			Errors:          buildErrorsData(a, rd),
-			HeaderSchemes:   hsch,
-			BodySchemes:     bosch,
-			QuerySchemes:    qsch,
-			BasicScheme:     basch,
-			Routes:          routes,
-			MountHandler:    fmt.Sprintf("Mount%sHandler", ep.VarName),
-			HandlerInit:     fmt.Sprintf("New%sHandler", ep.VarName),
-			RequestDecoder:  fmt.Sprintf("Decode%sRequest", ep.VarName),
-			ResponseEncoder: fmt.Sprintf("Encode%sResponse", ep.VarName),
-			ErrorEncoder:    fmt.Sprintf("Encode%sError", ep.VarName),
-			ClientStruct:    "Client",
-			EndpointInit:    ep.VarName,
-			RequestInit:     requestInit,
-			RequestEncoder:  requestEncoder,
-			ResponseDecoder: fmt.Sprintf("Decode%sResponse", ep.VarName),
+			Method:                      ep,
+			ServiceName:                 svc.Name,
+			ServiceVarName:              svc.VarName,
+			ServicePkgName:              svc.PkgName,
+			Payload:                     payload,
+			Result:                      buildResultData(a, rd),
+			Errors:                      buildErrorsData(a, rd),
+			HeaderSchemes:               hsch,
+			BodySchemes:                 bosch,
+			QuerySchemes:                qsch,
+			BasicScheme:                 basch,
+			Routes:                      routes,
+			MountHandler:                fmt.Sprintf("Mount%sHandler", ep.VarName),
+			HandlerInit:                 fmt.Sprintf("New%sHandler", ep.VarName),
+			RequestDecoder:              fmt.Sprintf("Decode%sRequest", ep.VarName),
+			ResponseEncoder:             fmt.Sprintf("Encode%sResponse", ep.VarName),
+			ErrorEncoder:                fmt.Sprintf("Encode%sError", ep.VarName),
+			ClientStruct:                "Client",
+			EndpointInit:                ep.VarName,
+			RequestInit:                 requestInit,
+			RequestEncoder:              requestEncoder,
+			ResponseDecoder:             fmt.Sprintf("Decode%sResponse", ep.VarName),
+			SkipRequestBodyEncodeDecode: a.SkipRequestBodyEncodeDecode,
 		}
 		buildStreamData(ad, a, rd)
 
@@ -1532,19 +1541,20 @@ func buildResponses(e *expr.HTTPEndpointExpr, result *expr.AttributeExpr, viewed
 					}
 				}
 				responses = append(responses, &ResponseData{
-					StatusCode:   statusCodeToHTTPConst(resp.StatusCode),
-					Description:  resp.Description,
-					Headers:      headersData,
-					ContentType:  resp.ContentType,
-					ServerBody:   serverBodyData,
-					ClientBody:   clientBodyData,
-					ResultInit:   init,
-					TagName:      tagName,
-					TagValue:     tagVal,
-					TagPointer:   tagPtr,
-					MustValidate: mustValidate,
-					ResultAttr:   codegen.Goify(origin, true),
-					ViewedResult: md.ViewedResult,
+					StatusCode:                   statusCodeToHTTPConst(resp.StatusCode),
+					Description:                  resp.Description,
+					Headers:                      headersData,
+					ContentType:                  resp.ContentType,
+					ServerBody:                   serverBodyData,
+					ClientBody:                   clientBodyData,
+					ResultInit:                   init,
+					TagName:                      tagName,
+					TagValue:                     tagVal,
+					TagPointer:                   tagPtr,
+					MustValidate:                 mustValidate,
+					ResultAttr:                   codegen.Goify(origin, true),
+					ViewedResult:                 md.ViewedResult,
+					SkipResponseBodyEncodeDecode: resp.SkipResponseBodyEncodeDecode,
 				})
 			}
 		}

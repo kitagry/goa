@@ -8,15 +8,16 @@ import (
 // serverStructWSSections return section templates that generate WebSocket
 // related struct type definitions for the server.
 func serverStructWSSections(data *ServiceData) []*codegen.SectionTemplate {
-	var sections []*codegen.SectionTemplate
-	if hasWebSocket(data) {
-		sections = append(sections, &codegen.SectionTemplate{
-			Name:    "server-stream-conn-configurer-struct",
-			Source:  webSocketConnConfigurerStructT,
-			Data:    data,
-			FuncMap: map[string]interface{}{"isWebSocketEndpoint": isWebSocketEndpoint},
-		})
+	if !hasWebSocket(data) {
+		return nil
 	}
+	var sections []*codegen.SectionTemplate
+	sections = append(sections, &codegen.SectionTemplate{
+		Name:    "server-stream-conn-configurer-struct",
+		Source:  webSocketConnConfigurerStructT,
+		Data:    data,
+		FuncMap: map[string]interface{}{"isWebSocketEndpoint": isWebSocketEndpoint},
+	})
 	for _, e := range data.Endpoints {
 		if e.ServerStream != nil {
 			sections = append(sections, &codegen.SectionTemplate{
@@ -33,15 +34,16 @@ func serverStructWSSections(data *ServiceData) []*codegen.SectionTemplate {
 // serverWSSections returns section templates that contain server WebSocket
 // specific code for the given service.
 func serverWSSections(data *ServiceData) []*codegen.SectionTemplate {
-	var sections []*codegen.SectionTemplate
-	if hasWebSocket(data) {
-		sections = append(sections, &codegen.SectionTemplate{
-			Name:    "server-stream-conn-configurer-struct-init",
-			Source:  webSocketConnConfigurerStructInitT,
-			Data:    data,
-			FuncMap: map[string]interface{}{"isWebSocketEndpoint": isWebSocketEndpoint},
-		})
+	if !hasWebSocket(data) {
+		return nil
 	}
+	var sections []*codegen.SectionTemplate
+	sections = append(sections, &codegen.SectionTemplate{
+		Name:    "server-stream-conn-configurer-struct-init",
+		Source:  webSocketConnConfigurerStructInitT,
+		Data:    data,
+		FuncMap: map[string]interface{}{"isWebSocketEndpoint": isWebSocketEndpoint},
+	})
 	for _, e := range data.Endpoints {
 		if e.ServerStream != nil {
 			if e.ServerStream.SendTypeRef != "" {
@@ -87,15 +89,16 @@ func serverWSSections(data *ServiceData) []*codegen.SectionTemplate {
 // clientStructWSSections return section templates that generate WebSocket
 // related struct type definitions for the client.
 func clientStructWSSections(data *ServiceData) []*codegen.SectionTemplate {
-	var sections []*codegen.SectionTemplate
-	if hasWebSocket(data) {
-		sections = append(sections, &codegen.SectionTemplate{
-			Name:    "client-stream-conn-configurer-struct",
-			Source:  webSocketConnConfigurerStructT,
-			Data:    data,
-			FuncMap: map[string]interface{}{"isWebSocketEndpoint": isWebSocketEndpoint},
-		})
+	if !hasWebSocket(data) {
+		return nil
 	}
+	var sections []*codegen.SectionTemplate
+	sections = append(sections, &codegen.SectionTemplate{
+		Name:    "client-stream-conn-configurer-struct",
+		Source:  webSocketConnConfigurerStructT,
+		Data:    data,
+		FuncMap: map[string]interface{}{"isWebSocketEndpoint": isWebSocketEndpoint},
+	})
 	for _, e := range data.Endpoints {
 		if e.ClientStream != nil {
 			sections = append(sections, &codegen.SectionTemplate{
@@ -111,15 +114,16 @@ func clientStructWSSections(data *ServiceData) []*codegen.SectionTemplate {
 // clientWSSections returns section templates that contain client WebSocket
 // specific code for the given service.
 func clientWSSections(data *ServiceData) []*codegen.SectionTemplate {
-	var sections []*codegen.SectionTemplate
-	if hasWebSocket(data) {
-		sections = append(sections, &codegen.SectionTemplate{
-			Name:    "client-stream-conn-configurer-struct-init",
-			Source:  webSocketConnConfigurerStructInitT,
-			Data:    data,
-			FuncMap: map[string]interface{}{"isWebSocketEndpoint": isWebSocketEndpoint},
-		})
+	if !hasWebSocket(data) {
+		return nil
 	}
+	var sections []*codegen.SectionTemplate
+	sections = append(sections, &codegen.SectionTemplate{
+		Name:    "client-stream-conn-configurer-struct-init",
+		Source:  webSocketConnConfigurerStructInitT,
+		Data:    data,
+		FuncMap: map[string]interface{}{"isWebSocketEndpoint": isWebSocketEndpoint},
+	})
 	for _, e := range data.Endpoints {
 		if e.ClientStream != nil {
 			if e.ClientStream.RecvTypeRef != "" {
@@ -176,7 +180,7 @@ func hasWebSocket(sd *ServiceData) bool {
 // isWebSocketEndpoint returns true if the endpoint defines a streaming payload
 // or result.
 func isWebSocketEndpoint(ed *EndpointData) bool {
-	return ed.ServerStream != nil || ed.ClientStream != nil
+	return (ed.ServerStream != nil || ed.ClientStream != nil) && !ed.SkipRequestBodyEncodeDecode && !ed.Result.Responses[0].SkipResponseBodyEncodeDecode
 }
 
 const (
